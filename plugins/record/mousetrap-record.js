@@ -74,12 +74,17 @@
      * @param {Event} e
      * @returns void
      */
+    var _lastHandledKeyCombo = null;
     function _handleKey(character, modifiers, e) {
         var self = this;
 
         if (!self.recording) {
             _origHandleKey.apply(self, arguments);
             return;
+        }
+
+        if (e.type == 'keyup') {
+            _lastHandledKeyCombo = null; // 重置最后处理的按键组合
         }
 
         // remember this character if we're currently recording a sequence
@@ -96,6 +101,14 @@
                 _recordKey(modifiers[i]);
             }
             _recordKey(character);
+            var keyCombo = Array.from(new Set(modifiers.concat(character))).join('+');
+
+            // 检查这个按键组合是否与上一个处理过的按键组合不同
+            if (_lastHandledKeyCombo !== keyCombo) {
+                _lastHandledKeyCombo = keyCombo; // 更新最后处理的按键组合
+
+                self.liveUpdateCallback(keyCombo); // 调用实时更新显示的方法
+            }
 
             // once a key is released, all keys that were held down at the time
             // count as a keypress
@@ -243,7 +256,7 @@
      * @param {Function} callback
      * @returns void
      */
-    Mousetrap.prototype.record = function(options, callback) {
+    Mousetrap.prototype.record = function (options, callback, liveUpdateCallback) {
         _options = _extend({}, _defaultOptions);
         if(typeof options === 'function') {
             callback = options;
@@ -257,6 +270,7 @@
             self.recording = false;
             callback.apply(self, arguments);
         };
+        self.liveUpdateCallback = liveUpdateCallback || function() {};
     };
 
     /**
