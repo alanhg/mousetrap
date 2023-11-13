@@ -99,7 +99,7 @@ Unit tests run via <a href="http://mochajs.org/" target="_blank">mocha</a>.
 3.  Run tests
 
     ```bash
-    grunt mocha
+    npm test
     ```
 
 ## Documentation
